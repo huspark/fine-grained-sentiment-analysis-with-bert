@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" Fine-tuning the library models for named entity recognition on CoNLL-2003 (Bert or Roberta). """
+""" Fine-tune BERT on fine-grained sentiment analysis of the Yelp-5 dataset """
 
 
 import argparse
@@ -22,6 +22,7 @@ import os
 import random
 
 import numpy as np
+from sklearn.metrics import accuracy_score, mean_absolute_error, mean_squared_error
 import torch
 from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler, TensorDataset
@@ -33,8 +34,8 @@ from transformers import (
     BertTokenizer,
     get_linear_schedule_with_warmup,
 )
+
 from utils_yelp import convert_examples_to_features, read_examples_from_file
-from sklearn.metrics import accuracy_score, mean_absolute_error, mean_squared_error
 from model import BertForSentimentAnalysis
 
 try:

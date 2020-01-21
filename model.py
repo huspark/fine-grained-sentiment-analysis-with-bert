@@ -3,8 +3,8 @@ from transformers.modeling_bert import *
 
 class BertForSentimentAnalysis(BertPreTrainedModel):
     """
-    This model is identical to BertForSequenceClassification except the loss function for the regression scheme.
-    Instead of using Mean Squared Error, using masked_smooth_l1_loss achieves a slightly better performance.
+    This model is identical to BertForSequenceClassification except for the loss function of the regression mode.
+    Instead of using MSELoss(), it uses masked_smooth_l1_loss() achieves a slightly better performance.
 
         **labels**: (`optional`) ``torch.LongTensor`` of shape ``(batch_size,)``:
             Labels for computing the sequence classification/regression loss.
@@ -70,10 +70,15 @@ class BertForSentimentAnalysis(BertPreTrainedModel):
         if labels is not None:
             # regression
             if self.num_labels == 1:
-                # Todo: add option for MSE loss
+                # Use mean squared loss for regression
                 # loss_fct = MSELoss()
                 # loss = loss_fct(logits.view(-1), labels.view(-1))
-                loss = masked_smooth_l1_loss(logits.view(-1), labels.view(-1))
+
+                # Use masked smooth l1 loss for regression
+                # loss = masked_smooth_l1_loss(logits.view(-1), labels.view(-1))
+
+                # Use masked MSE for regression
+                loss = masked_mse_loss(logits.view(-1), labels.view(-1))
 
             # classification
             else:
@@ -100,3 +105,21 @@ def masked_smooth_l1_loss(input, target):
 
     return torch.where(mask, zeros, smooth_l1).sum()
 
+
+def masked_mse_loss(input, target):
+    t = torch.abs(input - target)
+    t = t * 2
+    mse = torch.where(t < 1, t ** 3, 1.5 * t ** 2 - 0.5)
+
+    # Modified Smooth L1 Loss (loss function changes at t = 0.5)
+    # smooth_l1 = torch.where(t < 0.5, 0.5 * t ** 2, 0.5 * (t - 0.25))
+    zeros = torch.zeros_like(mse)
+
+    extreme_target = torch.abs(target - 2)
+    extreme_input = torch.abs(input - 2)
+    mask = (extreme_target == 2) * (extreme_input > 2)
+
+    return torch.where(mask, zeros, mse).sum() / mse.size(-1)
+
+# Compute Coefficient
+# 0.5 ** x = c_1 * 0.5 ** y + c_2, x * 0.5 ** (x-1) = c_1 * y * 0.5 ** (y-1), x = 3, y = 2
