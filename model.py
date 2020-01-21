@@ -2,7 +2,10 @@ from transformers.modeling_bert import *
 
 
 class BertForSentimentAnalysis(BertPreTrainedModel):
-    r"""
+    """
+    This model is identical to BertForSequenceClassification except the loss function for the regression scheme.
+    Instead of using Mean Squared Error, using masked_smooth_l1_loss achieves a slightly better performance.
+
         **labels**: (`optional`) ``torch.LongTensor`` of shape ``(batch_size,)``:
             Labels for computing the sequence classification/regression loss.
             Indices should be in ``[0, ..., config.num_labels - 1]``.

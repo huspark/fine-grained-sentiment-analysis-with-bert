@@ -21,11 +21,9 @@ import glob
 import logging
 import os
 import random
-import json
 
 import numpy as np
 import torch
-from seqeval.metrics import f1_score, precision_score, recall_score
 from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler, TensorDataset
 from torch.utils.data.distributed import DistributedSampler
@@ -62,24 +60,6 @@ except ImportError:
 
 
 logger = logging.getLogger(__name__)
-
-ALL_MODELS = sum(
-    (
-        tuple(conf.pretrained_config_archive_map.keys())
-        for conf in (BertConfig, RobertaConfig)
-        # tuple(conf.pretrained_config_archive_map.keys())
-        # for conf in (BertConfig, RobertaConfig, DistilBertConfig, CamembertConfig, XLMRobertaConfig)
-    ),
-    (),
-)
-
-MODEL_CLASSES = {
-    "bert": (BertConfig, BertForSentimentAnalysis, BertTokenizer),
-    "roberta": (RobertaConfig, RobertaForSequenceClassification, RobertaTokenizer),
-    # "distilbert": (DistilBertConfig, DistilBertForTokenClassification, DistilBertTokenizer),
-    # "camembert": (CamembertConfig, CamembertForTokenClassification, CamembertTokenizer),
-    # "xlmroberta": (XLMRobertaConfig, XLMRobertaForTokenClassification, XLMRobertaTokenizer),
-}
 
 
 def set_seed(args):
@@ -412,7 +392,7 @@ def main():
         default=None,
         type=str,
         required=True,
-        help="The input data dir. Should contain the training files for the CoNLL-2003 NER task.",
+        help="The input data dir. Should contain the training files for the Yelp-5 Sentiment Analysis task.",
     )
     parser.add_argument(
         "--model_type",
@@ -586,13 +566,10 @@ def main():
     # Set seed
     set_seed(args)
 
-    # labels = get_labels(args.labels)
     labels = [1.0, 2.0, 3.0, 4.0, 5.0]
     if args.regression:
-        # labels = [-2.0, -1.0, 0.0, 1.0, 2.0]
         num_labels = 1
     else:
-        # labels = [1.0, 2.0, 3.0, 4.0, 5.0]
         num_labels = len(labels)
     # Use cross entropy ignore index as padding label id so that only real label ids contribute to the loss later
     pad_token_label_id = CrossEntropyLoss().ignore_index
@@ -601,8 +578,9 @@ def main():
     if args.local_rank not in [-1, 0]:
         torch.distributed.barrier()  # Make sure only the first process in distributed training will download model & vocab
 
-    args.model_type = args.model_type.lower()
-    config_class, model_class, tokenizer_class = MODEL_CLASSES[args.model_type]
+    config_class = BertConfig
+    model_class = BertForSentimentAnalysis
+    tokenizer_class = BertTokenizer
     config = config_class.from_pretrained(
         args.config_name if args.config_name else args.model_name_or_path,
         num_labels=num_labels,
