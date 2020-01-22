@@ -3,8 +3,8 @@ from transformers.modeling_bert import *
 
 class BertForSentimentAnalysis(BertPreTrainedModel):
     """
-    This model is identical to BertForSequenceClassification except for the loss function of the regression mode.
-    Instead of using MSELoss(), it uses masked_smooth_l1_loss() achieves a slightly better performance.
+    This model is almost identical to BertForSequenceClassification, but it provides different loss functions in the
+    regression mode.
 
         **labels**: (`optional`) ``torch.LongTensor`` of shape ``(batch_size,)``:
             Labels for computing the sequence classification/regression loss.
@@ -74,11 +74,15 @@ class BertForSentimentAnalysis(BertPreTrainedModel):
                 # loss_fct = MSELoss()
                 # loss = loss_fct(logits.view(-1), labels.view(-1))
 
+                # Use smooth l1 loss for regression
+                # loss_fct = torch.
+                # loss = loss_fct(logits.view(-1), labels.view(-1))
+
+                # # Use masked mean squared loss for regression
+                loss = masked_mse_loss(logits.view(-1), labels.view(-1))
+
                 # Use masked smooth l1 loss for regression
                 # loss = masked_smooth_l1_loss(logits.view(-1), labels.view(-1))
-
-                # Use masked MSE for regression
-                loss = masked_mse_loss(logits.view(-1), labels.view(-1))
 
             # classification
             else:
