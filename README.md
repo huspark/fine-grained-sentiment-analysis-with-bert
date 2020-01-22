@@ -1,9 +1,9 @@
 # Yelp Fine-Grained Sentiment Analysis with BERT
-This project uses BERT(Bidirectional Encoder Representations from Transformers) for sentiment analysis of the Yelp-5 
-dataset. It has two main objectives:
+This project fine-tunes a customized BERT(Bidirectional Encoder Representations from Transformers)-based model for 
+sentiment classification/regression of the Yelp-5 dataset. 
 
 1. Build a custom BERT-based model that performs both classification and regression techniques for sentiment analysis 
-(see BertForSentimentAnalysis in model.py)
+(see BertForSentimentAnalysis in <a href="#model.py">model.py</a>)
 2. Design a custom loss function that works well with sentiment analysis regression (see masked_smooth_l1_loss in 
 model.py)
 
