@@ -184,6 +184,18 @@ def split_data(input_file, frac=0.01):
 
             output_file.write(line)
 
+def count_labels(input_file):
+    # file_path = os.path.join(data_dir, "{}_0.01.csv".format(mode))
+
+    label_count = np.zeros(5)
+    with open(input_file, "r", encoding='utf-8') as file:
+        reader = csv.reader(file)
+        for line in reader:
+            label_count[int(line[0])-1] += 1
+
+    print(label_count)
+
 
 if __name__=="__main__":
-    split_data("../dataset/yelp_review_full_csv/train.csv", frac=0.01)
+    # split_data("../dataset/yelp_review_full_csv/train.csv", frac=0.01)
+    # count_labels("train.csv")
