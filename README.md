@@ -3,7 +3,7 @@ This project fine-tunes a customized BERT(Bidirectional Encoder Representations 
 sentiment classification/regression of the Yelp-5 dataset. 
 
 1. Build a custom BERT-based model that performs both classification and regression techniques for sentiment analysis 
-(see BertForSentimentAnalysis in <a href="#model.py">model.py</a>)
+(see BertForSentimentAnalysis in <a href="model.py">model.py</a>)
 2. Design a custom loss function that works well with sentiment analysis regression (see masked_smooth_l1_loss in 
 model.py)
 
