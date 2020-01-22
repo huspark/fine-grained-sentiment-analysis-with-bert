@@ -2,12 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c7cacb07-7073-490d-8346-a94e3a34d3f4" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/masked-smooth-l1-loss.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -58,7 +53,7 @@
       <option name="presentableId" value="Default" />
       <updated>1579488717142</updated>
       <workItem from="1579488720975" duration="33868000" />
-      <workItem from="1579715455024" duration="616000" />
+      <workItem from="1579715455024" duration="703000" />
     </task>
     <task id="LOCAL-00001" summary="feat: first commit">
       <created>1579588173004</created>
@@ -95,7 +90,14 @@
       <option name="project" value="LOCAL" />
       <updated>1579716134311</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="docs: minor fix">
+      <created>1579716170319</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1579716170319</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -120,6 +122,7 @@
     <MESSAGE value="refactor: run_yelp.py simplified&#10;&#10;Simplified run_yelp.py by 1) only supporting the original Bert model, and 2) only supporting single GPU training" />
     <MESSAGE value="docs: README.md updated, requirements.txt added" />
     <MESSAGE value="docs: README.md update" />
-    <option name="LAST_COMMIT_MESSAGE" value="docs: README.md update" />
+    <MESSAGE value="docs: minor fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="docs: minor fix" />
   </component>
 </project>
