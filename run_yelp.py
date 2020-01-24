@@ -392,6 +392,9 @@ def main():
     )
     parser.add_argument("--seed", type=int, default=42, help="random seed for initialization")
     parser.add_argument("--regression", action="store_true", help="Perform regression instead of classification")
+    parser.add_argument(
+        "--loss", default="mse", type=str, help="Use the specified loss function for regression"
+    )
     args = parser.parse_args()
 
     if (
@@ -448,6 +451,8 @@ def main():
         config=config,
         cache_dir=args.cache_dir if args.cache_dir else None,
     )
+
+    model.set_loss(args.loss)
 
     model.to(args.device)
 

@@ -39,8 +39,12 @@ class BertForSentimentAnalysis(BertPreTrainedModel):
         self.bert = BertModel(config)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
         self.classifier = nn.Linear(config.hidden_size, self.num_labels)
+        self.loss = 'mse'
 
         self.init_weights()
+
+    def set_loss(self, loss):
+        self.loss = loss
 
     def forward(
         self,
@@ -70,19 +74,22 @@ class BertForSentimentAnalysis(BertPreTrainedModel):
         if labels is not None:
             # regression
             if self.num_labels == 1:
-                # Use mean squared loss for regression
-                # loss_fct = MSELoss()
-                # loss = loss_fct(logits.view(-1), labels.view(-1))
-
-                # Use smooth l1 loss for regression
-                # loss_fct = torch.
-                # loss = loss_fct(logits.view(-1), labels.view(-1))
-
-                # # Use masked mean squared loss for regression
-                loss = masked_mse_loss(logits.view(-1), labels.view(-1))
-
-                # Use masked smooth l1 loss for regression
-                # loss = masked_smooth_l1_loss(logits.view(-1), labels.view(-1))
+                if self.loss == 'mse':
+                    # Use mean squared loss for regression
+                    loss_fct = MSELoss()
+                    loss = loss_fct(logits.view(-1), labels.view(-1))
+                elif self.loss == 'smoothl1':
+                    # Use smooth l1 loss for regression
+                    loss_fct = torch.nn.SmoothL1Loss()
+                    loss = loss_fct(logits.view(-1), labels.view(-1))
+                elif self.loss == 'masked_mse':
+                    # Use masked mean squared loss for regression
+                    loss = masked_mse_loss(logits.view(-1), labels.view(-1))
+                elif self.loss == 'masked_smoothl1':
+                    # Use masked smooth l1 loss for regression
+                    loss = masked_smooth_l1_loss(logits.view(-1), labels.view(-1))
+                else:
+                    print('Loss function not supported.')
 
             # classification
             else:
@@ -95,12 +102,8 @@ class BertForSentimentAnalysis(BertPreTrainedModel):
 
 def masked_smooth_l1_loss(input, target):
     t = torch.abs(input - target)
+    smooth_l1 = torch.where(t < 1, 0.5 * t ** 2, t - 0.5)
 
-    # Regular Smooth L1 Loss
-    # smooth_l1 = torch.where(t < 1, 0.5 * t ** 2, t - 0.5)
-
-    # Modified Smooth L1 Loss (loss function changes at t = 0.5)
-    smooth_l1 = torch.where(t < 0.5, 0.5 * t ** 2, 0.5 * (t - 0.25))
     zeros = torch.zeros_like(smooth_l1)
 
     extreme_target = torch.abs(target - 2)
@@ -112,11 +115,8 @@ def masked_smooth_l1_loss(input, target):
 
 def masked_mse_loss(input, target):
     t = torch.abs(input - target)
-    t = t * 2
-    mse = torch.where(t < 1, t ** 3, 1.5 * t ** 2 - 0.5)
+    mse = t ** 2
 
-    # Modified Smooth L1 Loss (loss function changes at t = 0.5)
-    # smooth_l1 = torch.where(t < 0.5, 0.5 * t ** 2, 0.5 * (t - 0.25))
     zeros = torch.zeros_like(mse)
 
     extreme_target = torch.abs(target - 2)
@@ -124,6 +124,3 @@ def masked_mse_loss(input, target):
     mask = (extreme_target == 2) * (extreme_input > 2)
 
     return torch.where(mask, zeros, mse).sum() / mse.size(-1)
-
-# Compute Coefficient
-# 0.5 ** x = c_1 * 0.5 ** y + c_2, x * 0.5 ** (x-1) = c_1 * y * 0.5 ** (y-1), x = 3, y = 2

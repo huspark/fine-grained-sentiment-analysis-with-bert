@@ -42,7 +42,7 @@ class InputFeatures(object):
 
 
 def read_examples_from_file(data_dir, mode):
-    file_path = os.path.join(data_dir, "{}_0.01.csv".format(mode))
+    file_path = os.path.join(data_dir, "{}_0.1.csv".format(mode))
 
     examples = []
     with open(file_path, "r", encoding='utf-8') as file:
@@ -198,4 +198,4 @@ def count_labels(input_file):
 
 if __name__=="__main__":
     # split_data("../dataset/yelp_review_full_csv/train.csv", frac=0.01)
-    # count_labels("train.csv")
+    count_labels("train.csv")
