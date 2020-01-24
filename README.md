@@ -12,7 +12,7 @@ run_yelp.py and utils_yelp.py are based on the <a href="https://github.com/huggi
 PyTorch transformers</a> repository. For conciseness, this project only uses the original BERT model and does not 
 support multi-GPU training.
 
-## Overview
+## Background
 
 This project focuses on fine-grained sentiment analysis, in which a model predicts a review text's score as 
 [0, 1, 2, 3, 4]. When we use a BERT-based model for this task, there are two dominant approaches: a 
@@ -48,23 +48,64 @@ analysis. Furthermore, we choose and test 4 different loss functions, two of whi
 
 ### How Should the Model Compute the Loss in Edge Cases?
 The model's prediction of a review text's score can be any real number while the label of the text is one of [0, 1, 2, 
-3, 4]. This observation implies the loss function for regression-based fine-grained sentiment analysis model should
+3, 4]. This observation implies the loss function for a regression-based fine-grained sentiment analysis model should
 
  * apply a small loss when the absolute value of (the model's prediction - label) < 0.5
  * apply a small loss when the model predicts a score < 0 for a review text whose label is 0.0
  * apply a small loss when the model predicts a score > 4 for a review text whose label is 4.0
  
-The first property comes from the fact that the model rounds its real-valued prediction to the nearest integer. 
-This means that if the absolute value of (the model's prediction - label) < 0.5, the rounded prediction will be equal 
-to the example's label (i.e., round(the model's prediction) = label). In this circumstance, the model does not need to 
-update its parameters by much since the model has already made the correct prediction. Furthermore, we ignore the fact 
-that the ground truth scores for reviews with the same label are different. For example, the ground truth score of a 
-review text with label=3 can be any real number from 2.5 to 3.5.
+The first property comes from the fact that the model rounds its real-valued prediction to the nearest integer. If 
+the label of a review text is 2, its real-valued score can range from 1.5 to 2.5. Therefore, we should not penalize 
+the model by much when the model makes a prediction within the range. To ensure our model learns more when 
+(the model's prediction - label) < 0.5, we want the first derivative of our loss function to be smaller when the error 
+is less than 0.5. Common loss functions that satisfy this property include the mean squared loss and the smooth l1 loss.
 
-The second and third properties comes from the fact that any review with ground truth score less than 0 is
-labeled with 0. Similarly, a review with its ground truth score higher than 4 is labeled with 4. Therefore, we can 
-assume that the model made a correct prediction if it outputs a score less than 0 or a score higher than 4 for label=0 
-or 4, respectively.
+The second and third properties are necessary because the real-valued score of an extreme review can be significantly 
+small or large. For instance, if the label of a review text is 0, its real-valued score can range from -inf to 0.5. 
+Therefore, if the model predicted a score lower than 0, it made a correct prediction and does not need to learn at all. 
+Enforcing learning in this case can actually make the model to treat all extreme reviews to have the same degree of 
+positivity or negativity. To mitigate this problem, we mask the loss to be 0 in these cases.
+
+Considering the three properties mentioned above, we implement two custom loss functions called masked mean squared 
+loss and masked smooth l1 loss.
+
+```shell
+def masked_smooth_l1_loss(input, target):
+    t = torch.abs(input - target)
+    smooth_l1 = torch.where(t < 1, 0.5 * t ** 2, t - 0.5)
+
+    zeros = torch.zeros_like(smooth_l1)
+
+    extreme_target = torch.abs(target - 2)
+    extreme_input = torch.abs(input - 2)
+    mask = (extreme_target == 2) * (extreme_input > 2)
+
+    return torch.where(mask, zeros, smooth_l1).sum()
+```
+
+```shell
+def masked_mse_loss(input, target):
+    t = torch.abs(input - target)
+    mse = t ** 2
+
+    zeros = torch.zeros_like(mse)
+
+    extreme_target = torch.abs(target - 2)
+    extreme_input = torch.abs(input - 2)
+    mask = (extreme_target == 2) * (extreme_input > 2)
+
+    return torch.where(mask, zeros, mse).sum() / mse.size(-1)
+```
+
+Here, we report the results of our experiments on 10% of Yelp-5 dataset.
+
+Model                                  |          Accuracy          |    MAE    |    MSE    |   
+-------------------------------------- | :------------------------: | :-------: | :-------: |
+Classification-Based, CrossEntropyLoss | 25,000                     | 4.32      | 4.32      |
+Regression-Based, MSELoss              | 25,000                     | 4.51      | 4.32      |
+Regression-Based, SmoothL1Loss         | **20**                     | **4.20**  | 4.32      |
+Regression-Based, Masked MSELoss       | 25,000                     | 4.51      | 4.32      |
+Regression-Based, Masked SmoothL1Loss  | **20**                     | **4.20**  | 4.32      |
 
 ## Dataset
 
