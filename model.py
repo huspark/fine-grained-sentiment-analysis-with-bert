@@ -39,6 +39,7 @@ class BertForSentimentAnalysis(BertPreTrainedModel):
         self.bert = BertModel(config)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
         self.classifier = nn.Linear(config.hidden_size, self.num_labels)
+        # Default regression loss function
         self.loss = 'mse'
 
         self.init_weights()
@@ -123,4 +124,4 @@ def masked_mse_loss(input, target):
     extreme_input = torch.abs(input - 2)
     mask = (extreme_target == 2) * (extreme_input > 2)
 
-    return torch.where(mask, zeros, mse).sum() / mse.size(-1)
+    return torch.mean(torch.where(mask, zeros, mse))

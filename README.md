@@ -101,11 +101,11 @@ Here, we report the results of our experiments on 10% of Yelp-5 dataset.
 
 Model                                  |          Accuracy          |    MAE    |    MSE    |   
 -------------------------------------- | :------------------------: | :-------: | :-------: |
-Classification-Based, CrossEntropyLoss | 25,000                     | 4.32      | 4.32      |
-Regression-Based, MSELoss              | 25,000                     | 4.51      | 4.32      |
-Regression-Based, SmoothL1Loss         | **20**                     | **4.20**  | 4.32      |
-Regression-Based, Masked MSELoss       | 25,000                     | 4.51      | 4.32      |
-Regression-Based, Masked SmoothL1Loss  | **20**                     | **4.20**  | 4.32      |
+Classification-Based, CrossEntropyLoss | **0.5928**                 | **0.4902**| 0.7134    |
+Regression-Based, MSELoss              | 0.5814                     | 0.5404    | 0.5919    |
+Regression-Based, SmoothL1Loss         | 0.5846                     | 0.5342    | 0.5849    |
+Regression-Based, Masked MSELoss       | 0.5794                     | 0.5406    | 0.5894    |
+Regression-Based, Masked SmoothL1Loss  | 0.5898                     | 0.5355    | **0.5824**|
 
 ## Dataset
 
