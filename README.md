@@ -1,24 +1,22 @@
 # Yelp Fine-Grained Sentiment Analysis with BERT
 In this project, we fine-tune a customized BERT[<sup>1</sup>](https://arxiv.org/pdf/1810.04805.pdf) (Bidirectional 
-Encoder Representations from Transformers)-based model to fine-grained sentiment analysis of the Yelp-5 dataset. We 
-have two main objectives:
+Encoder Representations from Transformers)-based model to fine-grained sentiment analysis of the Yelp-5 dataset. Our 
+main objective is to build a BERT-based model that predicts a review text's score as a real-valued number in [0, 4].
 
-1. Build a custom BERT-based model that uses either classification or regression approach to perform fine-grained 
-sentiment analysis of the Yelp-5 dataset (see BertForSentimentAnalysis in <a href="model.py">model.py</a>)
-2. Design and test custom loss functions that work well with a regression-based sentiment analysis model 
-(see masked_mse_loss and masked_smooth_l1_loss in <a href="model.py">model.py</a>)
-
-run_yelp.py and utils_yelp.py are based on the <a href="https://github.com/huggingface/transformers"> huggingface's 
-PyTorch transformers</a> repository. For conciseness, this project only uses the original BERT model and does not 
-support multi-GPU training.
+I looked at template files from <a href="https://github.com/huggingface/transformers"> huggingface's PyTorch 
+transformers</a> repository when writing run_yelp.py and utils_yelp.py. For conciseness, this project only uses the 
+original BERT model and does not support multi-GPU training.
 
 ## Background
 
-This project focuses on fine-grained sentiment analysis, in which a model predicts a review text's score as 
-[0, 1, 2, 3, 4]. When we use a BERT-based model for this task, there are two dominant approaches: a 
-classification-based approach and a regression-based approach.
+Two dominant approaches exist for fine-grained sentiment analysis: using a classification model to predict the label of 
+a review text as [0, 1, 2, 3, 4] or using a regression model to predict a real-valued score in [0, 4].
 
-### Classification-Based Model
+A regression model has an advantage over a classification model: it produces a real-valued score 
+of a review text while the classification based approach can only output the review text's probability for each label. 
+However, the regression based approach results in a lower accuracy than the classification based approach. 
+
+### Classification Model
 1. Generate the embedding of a review text by extracting the BERT embedding of the [CLS] token. Typically, the output 
 of this step is a two dimensional tensor of size [batch_size, hidden_size].
 2. Use a linear layer of size [hidden_size, num_labels = 5] to map the review's BERT embedding to five outputs. 
@@ -28,19 +26,17 @@ is a two dimensional tensor of size [batch_size, 5].
 4. When testing, use the model to produce a review text's probability for each label and find the label with the 
 highest probability.
 
-### Regression-Based Model
+### Regression Model
 1. Generate the embedding of a review text by extracting the BERT embedding of the [CLS] token.
 2. Use a linear layer of size [hidden_size, num_labels = 1] to map the review's BERT embedding to a single 
 output. This will correspond to the review's score.
 3. Train the model using the mean-squared loss function to perform a regression.
-4. When testing, use the model to produce a review text's real-valued score and round it up to the nearest integer.
+4. When testing, use the model to produce a review text's real-valued score.
 
-The regression based approach has an advantage over the classification based approach: it produces a real-valued score 
-of a review text while the classification based approach can only output the review text's probability for each label. 
-However, the regression based approach results in a lower accuracy than the classification based approach.  
+The regression model minimizes
 
-By designing custom loss functions specific to the regression-based model, we can slightly improve the 
-model's accuracy.
+![loss function 1]("img/loss_func_1.svg")
+![loss function 2]("img/loss_func_2.svg")
 
 ## Loss function of a Regression Based Model for Fine-Grained Sentiment Analysis
 In this section, we discuss necessary properties of a loss function for regression-based fine-grained sentiment 
@@ -97,7 +93,8 @@ def masked_mse_loss(input, target):
     return torch.where(mask, zeros, mse).sum() / mse.size(-1)
 ```
 
-Here, we report the results of our experiments on 10% of Yelp-5 dataset.
+Here, we report the results of our experiments on 10% of Yelp-5 dataset. We measure the accuracy of our 
+regression-based models by rounding up the 
 
 Model                                  |          Accuracy          |    MAE    |    MSE    |   
 -------------------------------------- | :------------------------: | :-------: | :-------: |

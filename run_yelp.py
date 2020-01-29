@@ -219,9 +219,9 @@ def evaluate(args, model, tokenizer, labels, pad_token_label_id, mode, prefix=""
     if args.regression:
         preds = np.squeeze(preds)
         for i in range(len(preds)):
-            if preds[i] <= -0.5:
+            if preds[i] <= 0:
                 preds[i] = 0
-            elif preds[i] >= 4.5:
+            elif preds[i] >= 4:
                 preds[i] = 4
     else:
         preds = np.argmax(preds, axis=1)
