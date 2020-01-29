@@ -96,8 +96,7 @@ def masked_mse_loss(input, target):
     return torch.where(mask, zeros, mse).sum() / mse.size(-1)
 ```
 
-Here, we report the results of our experiments on 10% of Yelp-5 dataset. We measure the accuracy of our 
-regression-based models by rounding up the 
+Here, we report the results of our experiments on 10% of Yelp-5 dataset.
 
 Model                                  |    MAE    |    MSE    |   
 -------------------------------------- | :-------: | :-------: |
