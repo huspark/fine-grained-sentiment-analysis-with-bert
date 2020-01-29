@@ -33,14 +33,9 @@ output. This will correspond to the review's score.
 3. Train the model using the mean-squared loss function to perform a regression.
 4. When testing, use the model to produce a review text's real-valued score.
 
-The regression model minimizes
-
-![loss function 1]("img/loss_func_1.svg")
-![loss function 2]("img/loss_func_2.svg")
-
-## Loss function of a Regression Based Model for Fine-Grained Sentiment Analysis
-In this section, we discuss necessary properties of a loss function for regression-based fine-grained sentiment 
-analysis. Furthermore, we choose and test 4 different loss functions, two of which are custom-built.
+## Loss function of a Regression Model for Fine-Grained Sentiment Analysis
+In this section, we discuss necessary properties of a cost function for regression-based fine-grained sentiment 
+analysis. Furthermore, we choose and test 4 different cost functions, two of which are custom-built.
 
 ### How Should the Model Compute the Loss in Edge Cases?
 The model's prediction of a review text's score can be any real number while the label of the text is one of [0, 1, 2, 
@@ -64,6 +59,14 @@ positivity or negativity. To mitigate this problem, we mask the loss to be 0 in 
 
 Considering the three properties mentioned above, we implement two custom loss functions called masked mean squared 
 loss and masked smooth l1 loss.
+
+The original regression model's loss function is
+
+![loss function 1](img/loss_func_1.svg)
+
+whereas a masked loss function is 
+
+![loss function 2](img/loss_func_2.svg)
 
 ```shell
 def masked_smooth_l1_loss(input, target):
@@ -96,13 +99,13 @@ def masked_mse_loss(input, target):
 Here, we report the results of our experiments on 10% of Yelp-5 dataset. We measure the accuracy of our 
 regression-based models by rounding up the 
 
-Model                                  |          Accuracy          |    MAE    |    MSE    |   
--------------------------------------- | :------------------------: | :-------: | :-------: |
-Classification-Based, CrossEntropyLoss | **0.5928**                 | **0.4902**| 0.7134    |
-Regression-Based, MSELoss              | 0.5814                     | 0.5404    | 0.5919    |
-Regression-Based, SmoothL1Loss         | 0.5846                     | 0.5342    | 0.5849    |
-Regression-Based, Masked MSELoss       | 0.5794                     | 0.5406    | 0.5894    |
-Regression-Based, Masked SmoothL1Loss  | 0.5898                     | 0.5355    | **0.5824**|
+Model                                  |    MAE    |    MSE    |   
+-------------------------------------- | :-------: | :-------: |
+Classification-Based, CrossEntropyLoss | **0.4902**| 0.7134    |
+Regression-Based, MSELoss              | 0.5404    | 0.5919    |
+Regression-Based, SmoothL1Loss         | 0.5342    | 0.5849    |
+Regression-Based, Masked MSELoss       | 0.5406    | 0.5894    |
+Regression-Based, Masked SmoothL1Loss  | 0.5355    | **0.5824**|
 
 ## Dataset
 
@@ -149,21 +152,7 @@ CUDA_VISIBLE_DEVICES=0 python3 run_yelp.py \
     --seed 1 \
     --overwrite_output_dir \
 ```
-### Sample Command for Running Regression on CPU
-```shell
-python3 run_yelp.py \
-    --data_dir ./ \
-    --model_name_or_path bert-base-multilingual-cased \
-    --output_dir masked-loss \
-    --max_seq_length  128 \
-    --num_train_epochs 3 \
-    --per_gpu_train_batch_size 32 \
-    --save_steps 100000 \
-    --seed 1 \
-    --overwrite_output_dir \
-    --regression
-```
-### Sample Command for Running Regression on GPU
+### Sample Command for Running Regression with MSE on GPU
 ```shell
 CUDA_VISIBLE_DEVICES=0 python3 run_yelp.py \
     --data_dir ./ \
@@ -176,4 +165,20 @@ CUDA_VISIBLE_DEVICES=0 python3 run_yelp.py \
     --seed 1 \
     --overwrite_output_dir \
     --regression
+    --loss mse
+```
+### Sample Command for Running Regression with masked_smooth_l1 on GPU
+```shell
+CUDA_VISIBLE_DEVICES=0 python3 run_yelp.py \
+    --data_dir ./ \
+    --model_name_or_path bert-base-multilingual-cased \
+    --output_dir masked-loss \
+    --max_seq_length  128 \
+    --num_train_epochs 3 \
+    --per_gpu_train_batch_size 32 \
+    --save_steps 100000 \
+    --seed 1 \
+    --overwrite_output_dir \
+    --regression
+    --loss masked_smoothl1
 ```
